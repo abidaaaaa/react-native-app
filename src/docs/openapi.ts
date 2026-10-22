@@ -42,11 +42,40 @@ export const openapiSpec = {
           email: { type: "string", format: "email", example: "ana@test.com" },
         },
       },
+      MeProfile: {
+        type: "object",
+        description:
+          "Perfil de quien tiene el token. Si la cuenta es de estudiante, " +
+          "incluye nombre, apellido y matrícula.",
+        properties: {
+          id: { type: "integer" },
+          email: { type: "string", format: "email" },
+          kind: { type: "string", enum: ["user", "student"] },
+          nombre: { type: "string" },
+          apellido: { type: "string" },
+          matricula: { type: "string" },
+        },
+      },
       LoginResponse: {
         type: "object",
         properties: {
-          token: { type: "string", example: "eyJhbGciOiJIUzI1NiIsInR5cCI6..." },
+          accessToken: { type: "string", example: "eyJhbGciOiJIUzI1NiIsInR5cCI6..." },
+          refreshToken: { type: "string", example: "eyJhbGciOiJIUzI1NiIsInR5cCI6..." },
           user: { $ref: "#/components/schemas/PublicUser" },
+        },
+      },
+      RefreshTokenRequest: {
+        type: "object",
+        required: ["refreshToken"],
+        properties: {
+          refreshToken: { type: "string", example: "eyJhbGciOiJIUzI1NiIsInR5cCI6..." },
+        },
+      },
+      RefreshTokenResponse: {
+        type: "object",
+        properties: {
+          accessToken: { type: "string", example: "eyJhbGciOiJIUzI1NiIsInR5cCI6..." },
+          refreshToken: { type: "string", example: "eyJhbGciOiJIUzI1NiIsInR5cCI6..." },
         },
       },
       StudentInput: {
@@ -182,6 +211,75 @@ export const openapiSpec = {
             },
           },
           "401": { description: "No autenticado", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
+        },
+      },
+    },
+    "/api/auth/refresh": {
+      post: {
+        tags: ["Auth"],
+        summary: "Renovar token de acceso",
+        description: "Intercambia un refresh token válido por un nuevo access token y refresh token (rotación)",
+        security: [],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/RefreshTokenRequest" },
+            },
+          },
+        },
+        responses: {
+          "200": {
+            description: "Tokens renovados",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/RefreshTokenResponse" },
+              },
+            },
+          },
+          "401": { description: "Refresh token inválido o expirado", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
+        },
+      },
+    },
+    "/api/auth/me": {
+      get: {
+        tags: ["Auth"],
+        summary: "Obtener usuario actual",
+        description: "Devuelve la información del usuario autenticado basándose en el token JWT",
+        security: [{ bearerAuth: [] }],
+        responses: {
+          "200": {
+            description: "Usuario autenticado",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: { data: { $ref: "#/components/schemas/MeProfile" } },
+                },
+                examples: {
+                  usuario: {
+                    summary: "Cuenta de usuario registrado",
+                    value: { data: { id: 5, email: "ana@test.com", kind: "user" } },
+                  },
+                  estudiante: {
+                    summary: "Cuenta de estudiante",
+                    value: {
+                      data: {
+                        id: 1,
+                        email: "juan@alumnos.test",
+                        kind: "student",
+                        nombre: "Juan",
+                        apellido: "Pérez",
+                        matricula: "A001",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          "401": { description: "No autenticado", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
+          "404": { description: "Usuario no encontrado", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
         },
       },
     },

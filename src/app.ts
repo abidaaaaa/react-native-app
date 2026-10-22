@@ -1,26 +1,33 @@
 import express, { type Express } from "express";
+import cors from "cors"; 
 import swaggerUi from "swagger-ui-express";
 import { openapiSpec } from "./docs/openapi";
 import type { AppDatabase } from "./db/database";
 import { UserRepository } from "./repositories/userRepository";
 import { StudentRepository } from "./repositories/studentRepository";
 import { TokenRepository } from "./repositories/tokenRepository";
+import { RefreshTokenRepository } from "./repositories/refreshTokenRepository"; // 1. Importar
 import { AuthService } from "./services/authService";
 import { createAuthRouter } from "./routes/authRoutes";
 import { createStudentRouter } from "./routes/studentRoutes";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler";
 
 /**
- * Construye la aplicación Express con todas las dependencias inyectadas
- * a partir de una base de datos. Permite crear apps aisladas en pruebas.
+- Construye la aplicación Express con todas las dependencias inyectadas
+- a partir de una base de datos. Permite crear apps aisladas en pruebas.
  */
 export function createApp(db: AppDatabase): Express {
   const users = new UserRepository(db);
   const students = new StudentRepository(db);
   const tokens = new TokenRepository(db);
-  const authService = new AuthService(users, tokens, students);
+  const refreshTokens = new RefreshTokenRepository(db); // 2. Instanciar con la base de datos
+  
+  // 3. Pasar los 4 argumentos al AuthService
+  const authService = new AuthService(users, tokens, students, refreshTokens);
 
   const app = express();
+
+  app.use(cors());
   app.use(express.json());
 
   app.get("/health", (_req, res) => {

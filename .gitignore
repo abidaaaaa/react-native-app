@@ -100,3 +100,5 @@ coverage/
 aidlc/
 AGENTS.md
 .vscode/
+node_modules/
+dist/

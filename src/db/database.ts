@@ -27,6 +27,19 @@ CREATE TABLE IF NOT EXISTS revoked_tokens (
   jti        TEXT PRIMARY KEY,
   expires_at INTEGER NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id    INTEGER NOT NULL,
+  user_kind  TEXT NOT NULL,
+  token      TEXT NOT NULL UNIQUE,
+  expires_at INTEGER NOT NULL,
+  created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user ON refresh_tokens(user_id, user_kind);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token ON refresh_tokens(token);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_expires ON refresh_tokens(expires_at);
 `;
 
 /**
@@ -42,6 +55,18 @@ export function createDatabase(location: string): AppDatabase {
   db.exec("PRAGMA foreign_keys = ON;");
   db.exec(SCHEMA);
 
+  // Migración: refresh_tokens tenía una llave foránea a users(id), pero los
+  // estudiantes también inician sesión (user_kind = 'student') y su id no
+  // existe en users, así que el login fallaba. Se recrea la tabla sin esa llave
+  // (solo se pierden los refresh tokens vigentes: hay que volver a iniciar sesión).
+  const fks = db
+    .prepare("PRAGMA foreign_key_list(refresh_tokens)")
+    .all() as unknown as unknown[];
+  if (fks.length > 0) {
+    db.exec("DROP TABLE refresh_tokens");
+    db.exec(SCHEMA);
+  }
+
   // Migración: si una base existente aún no tiene la columna password_hash
   // (creada antes de este cambio), la agregamos.
   const cols = db
@@ -51,6 +76,15 @@ export function createDatabase(location: string): AppDatabase {
     db.exec(
       "ALTER TABLE students ADD COLUMN password_hash TEXT NOT NULL DEFAULT ''",
     );
+  }
+
+  // Crear índices si no existen (para bases existentes)
+  try {
+    db.exec("CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user ON refresh_tokens(user_id, user_kind)");
+    db.exec("CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token ON refresh_tokens(token)");
+    db.exec("CREATE INDEX IF NOT EXISTS idx_refresh_tokens_expires ON refresh_tokens(expires_at)");
+  } catch {
+    // Los índices ya existen o la tabla aún no se crea
   }
 
   return db;
