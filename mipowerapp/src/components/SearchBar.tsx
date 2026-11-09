@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity, Text } from 'react-native';
-import { P } from '../constants/palette';
+import { G, R, S, glass } from '../constants/design';
+import { debounce } from '../utils/debounce';
 
 interface SearchBarProps {
   value: string;
@@ -18,24 +19,36 @@ export default function SearchBar({
   debounceMs = 300,
 }: SearchBarProps) {
   const [localValue, setLocalValue] = useState(value);
-  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastNotified = useRef(value);
 
+  // Sincronizar con el valor externo
   useEffect(() => {
     setLocalValue(value);
     lastNotified.current = value;
   }, [value]);
 
+  /**
+   * ERROR #20: Debounce timer sin cleanup en unmount
+   * Problema: el effect creaba un timer nuevo con cada carácter escrito
+   * (si el usuario escribe "juan" rápido, se crean 4 timers).
+   * Solución: una sola función con debounce (useCallback) y .cancel()
+   * en el cleanup del effect para limpiar el timer pendiente.
+   */
+  const debouncedOnChange = useCallback(
+    debounce((text: string) => {
+      lastNotified.current = text;
+      onChangeText(text);
+    }, debounceMs),
+    [onChangeText, debounceMs]
+  );
+
   useEffect(() => {
     if (localValue === lastNotified.current) return;
-    debounceTimer.current = setTimeout(() => {
-      lastNotified.current = localValue;
-      onChangeText(localValue);
-    }, debounceMs);
+    debouncedOnChange(localValue);
     return () => {
-      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+      debouncedOnChange.cancel();
     };
-  }, [localValue, debounceMs, onChangeText]);
+  }, [localValue, debouncedOnChange]);
 
   const handleClear = () => {
     setLocalValue('');
@@ -44,18 +57,22 @@ export default function SearchBar({
 
   return (
     <View style={styles.container}>
-      <View style={styles.iconCell}>
-        <Text style={styles.icon}>⌕</Text>
-      </View>
+      <Text style={styles.icon}>⌕</Text>
       <TextInput
         style={styles.input}
         placeholder={placeholder}
-        placeholderTextColor={P.inkMute}
+        placeholderTextColor={G.textMute}
         value={localValue}
         onChangeText={setLocalValue}
+        accessibilityLabel={placeholder}
       />
       {localValue.length > 0 && (
-        <TouchableOpacity style={styles.clearButton} onPress={handleClear}>
+        <TouchableOpacity
+          style={styles.clearButton}
+          onPress={handleClear}
+          hitSlop={10}
+          accessibilityRole="button"
+          accessibilityLabel="Borrar búsqueda">
           <Text style={styles.clearText}>✕</Text>
         </TouchableOpacity>
       )}
@@ -65,51 +82,29 @@ export default function SearchBar({
 
 const styles = StyleSheet.create({
   container: {
+    ...glass.card,
     flexDirection: 'row',
-    alignItems: 'stretch',
-    backgroundColor: P.paper,
-    marginHorizontal: 16,
-    marginVertical: 12,
-    borderWidth: 2,
-    borderColor: P.ink,
-    borderRadius: 22,
-    overflow: 'hidden',
-    shadowColor: P.lavenderStrong,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-  },
-  iconCell: {
-    width: 52,
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: P.lavenderStrong,
-    borderRightWidth: 2,
-    borderRightColor: P.ink,
+    marginHorizontal: S.lg,
+    marginVertical: S.md,
+    paddingHorizontal: S.lg,
+    borderRadius: R.lg,
+    gap: S.sm,
   },
-  icon: {
-    fontSize: 24,
-    color: P.ink,
-    fontWeight: '900',
-  },
+  icon: { fontSize: 22, color: G.accent },
   input: {
     flex: 1,
     paddingVertical: 14,
-    paddingHorizontal: 14,
+    color: G.text,
     fontSize: 15,
-    color: P.ink,
   },
   clearButton: {
-    width: 46,
+    width: 28,
+    height: 28,
+    borderRadius: R.sm,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: P.rose,
-    borderLeftWidth: 2,
-    borderLeftColor: P.ink,
+    backgroundColor: G.accentSoft,
   },
-  clearText: {
-    color: P.ink,
-    fontSize: 16,
-    fontWeight: '900',
-  },
+  clearText: { color: G.accent, fontSize: 13, fontWeight: '800' },
 });

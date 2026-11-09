@@ -1,14 +1,21 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { MONO, P } from '../constants/palette';
+import { G, R, S, T, glass } from '../constants/design';
 import { MenuItemProps } from '../interfaces/menu.interface';
 
 export default function MenuItem({ title, icon, onPress }: MenuItemProps) {
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress}>
+    <TouchableOpacity
+      style={styles.container}
+      onPress={onPress}
+      activeOpacity={0.8}
+      accessibilityRole="button"
+      accessibilityLabel={title}>
       <View style={styles.iconWrap}>
         <Text style={styles.icon}>{icon}</Text>
       </View>
-      <Text style={styles.title}>{title}</Text>
+      <Text style={styles.title} numberOfLines={1}>
+        {title}
+      </Text>
       <Text style={styles.arrow}>→</Text>
     </TouchableOpacity>
   );
@@ -16,40 +23,29 @@ export default function MenuItem({ title, icon, onPress }: MenuItemProps) {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 12,
-    marginBottom: 8,
-    borderRadius: 18,
-    borderWidth: 2,
-    borderColor: 'transparent',
-    backgroundColor: 'transparent',
+    ...glass.row,
+    marginBottom: S.sm,
   },
   iconWrap: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: R.sm,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
-    backgroundColor: P.lavender,
-    borderWidth: 2,
-    borderColor: P.ink,
+    backgroundColor: G.accentSoft,
+    borderWidth: 1,
+    borderColor: G.borderSoft,
   },
   icon: { fontSize: 18 },
   title: {
+    ...T.body,
     flex: 1,
-    fontSize: 14,
-    fontWeight: '900',
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
-    color: P.ink,
+    minWidth: 0,
+    fontWeight: '700',
   },
   arrow: {
-    fontFamily: MONO,
     fontSize: 18,
     fontWeight: '700',
-    color: P.lavenderDeep,
+    color: G.accentEnd,
   },
 });

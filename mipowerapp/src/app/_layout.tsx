@@ -7,6 +7,7 @@ import { store, setUser, setToken } from "../store/store"; // Ajusta la ruta a t
 import { getStorage } from "../utils/authStorage"; // Ajusta la ruta a tu utils
 import ErrorBoundary from "../components/ErrorBoundary";
 import { AuthProvider } from "../context/AuthContext";
+import { G, headerOptions } from "../constants/design";
 
 function AuthInitializer({ children }: { children: React.ReactNode }) {
     const dispatch = useDispatch();
@@ -34,8 +35,8 @@ function AuthInitializer({ children }: { children: React.ReactNode }) {
 
     if (isRestoring) {
         return (
-            <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#FFF8EA" }}>
-                <ActivityIndicator size="large" color="#6D55B8" />
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: G.bg }}>
+                <ActivityIndicator size="large" color={G.accent} />
             </View>
         );
     }
@@ -49,7 +50,7 @@ export default function RootLayout() {
             <AuthProvider>
                 <AuthInitializer>
                     <ErrorBoundary>
-                        <Stack>
+                        <Stack screenOptions={{ contentStyle: { backgroundColor: G.bg } }}>
 
                             <Stack.Screen
                                 name="index"
@@ -75,11 +76,7 @@ export default function RootLayout() {
                                 name="students"
                                 options={{
                                     title: "Estudiantes",
-                                    headerStyle: { backgroundColor: "#FFF8EA" },
-                                    headerTitleStyle: { fontWeight: "900" },
-                                    headerTintColor: "#3F3556",
-                                    headerShadowVisible: false,
-                                    headerTitleAlign: "left",
+                                    ...headerOptions,
                                 }}
                             />
 
@@ -87,11 +84,7 @@ export default function RootLayout() {
                                 name="student/[id]"
                                 options={{
                                     title: "Detalle de Estudiante",
-                                    headerStyle: { backgroundColor: "#FFF8EA" },
-                                    headerTitleStyle: { fontWeight: "900" },
-                                    headerTintColor: "#3F3556",
-                                    headerShadowVisible: false,
-                                    headerTitleAlign: "left",
+                                    ...headerOptions,
                                 }}
                             />
 

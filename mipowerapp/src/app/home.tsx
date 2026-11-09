@@ -10,9 +10,47 @@ import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 
 import SideMenu from "../components/SideMenu";
-import { BLOCK, MONO, P } from "../constants/palette";
+import { GlassBackground, GlassCard, GlassHeader } from "../components/glass";
+import { G, R, S, T, glass } from "../constants/design";
 import { RootState, logout } from "../store/store";
 import { removeStorage } from "../utils/authStorage";
+
+/* Fila de acceso rápido (icono + texto + flecha) */
+function QuickRow({
+    icon,
+    tint,
+    index,
+    title,
+    text,
+    onPress,
+}: {
+    icon: string;
+    tint: string;
+    index: string;
+    title: string;
+    text: string;
+    onPress: () => void;
+}) {
+    return (
+        <TouchableOpacity
+            style={styles.row}
+            onPress={onPress}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel={title}
+        >
+            <View style={[styles.iconCell, { backgroundColor: tint }]}>
+                <Text style={styles.iconText}>{icon}</Text>
+            </View>
+            <View style={styles.copy}>
+                <Text style={styles.index}>{index}</Text>
+                <Text style={styles.rowTitle} numberOfLines={1}>{title}</Text>
+                <Text style={styles.rowText}>{text}</Text>
+            </View>
+            <Text style={styles.arrowText}>↗</Text>
+        </TouchableOpacity>
+    );
+}
 
 export default function HomeScreen() {
     const router = useRouter();
@@ -38,74 +76,60 @@ export default function HomeScreen() {
     };
 
     return (
-        <View style={styles.container}>
+        <GlassBackground>
             {/* Barra superior */}
-            <View style={styles.topBar}>
-                <TouchableOpacity style={styles.squareButton} onPress={() => setMenuOpen(true)}>
-                    <Text style={styles.menuIcon}>☰</Text>
-                </TouchableOpacity>
-
-                <Text style={styles.eyebrow}>PORTAL DEL ALUMNO</Text>
-
-                <TouchableOpacity style={styles.squareButton} onPress={() => router.push("/profile")}>
-                    <Text style={styles.profile}>👤</Text>
-                </TouchableOpacity>
-            </View>
+            <GlassHeader
+                eyebrow="PORTAL DEL ALUMNO"
+                title="Inicio"
+                left={{ icon: "☰", label: "Abrir menú", onPress: () => setMenuOpen(true) }}
+                right={{ icon: "👤", label: "Ir a mi perfil", onPress: () => router.push("/profile") }}
+            />
 
             <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-                {/* Encabezado editorial */}
+                {/* Encabezado */}
                 <View style={styles.hero}>
                     {/* Saludo dinámico con el nombre del estado global */}
-                    <View style={styles.greetingTag}>
+                    <View style={glass.chip}>
                         <Text style={styles.greeting}>Hola, {firstName} 👋</Text>
                     </View>
                     <Text style={styles.title}>Qué gusto verte, {firstName}</Text>
                     <Text style={styles.subtitle}>Tu vida escolar, en un solo lugar.</Text>
                 </View>
 
-                <View style={styles.sectionHead}>
-                    <Text style={styles.sectionTitle}>Accesos rápidos</Text>
-                    <View style={styles.sectionRule} />
-                </View>
+                <Text style={styles.sectionTitle}>Accesos rápidos</Text>
 
-                {/* Lista numerada */}
-                <TouchableOpacity style={styles.row} onPress={() => router.push("/students")}>
-                    <View style={[styles.iconCell, styles.cellPeach]}><Text style={styles.studentsIconText}>🎓</Text></View>
-                    <View style={styles.copy}>
-                        <Text style={styles.index}>01</Text>
-                        <Text style={styles.rowTitle}>Estudiantes</Text>
-                        <Text style={styles.rowText}>Consulta y administra el alumnado</Text>
-                    </View>
-                    <View style={styles.arrowCell}><Text style={styles.arrowText}>↗</Text></View>
-                </TouchableOpacity>
+                <QuickRow
+                    icon="🎓"
+                    tint={G.accentSoft}
+                    index="01"
+                    title="Estudiantes"
+                    text="Consulta y administra el alumnado"
+                    onPress={() => router.push("/students")}
+                />
+                <QuickRow
+                    icon="◉"
+                    tint={G.violetSoft}
+                    index="02"
+                    title="Mi perfil"
+                    text="Consulta tus datos"
+                    onPress={() => router.push("/profile")}
+                />
+                <QuickRow
+                    icon="⚙"
+                    tint={G.cyanSoft}
+                    index="03"
+                    title="Ajustes"
+                    text="Personaliza tu espacio"
+                    onPress={() => router.push("/settings")}
+                />
 
-                <TouchableOpacity style={styles.row} onPress={() => router.push("/profile")}>
-                    <View style={[styles.iconCell, styles.cellRose]}><Text style={styles.quickIconText}>◉</Text></View>
-                    <View style={styles.copy}>
-                        <Text style={styles.index}>02</Text>
-                        <Text style={styles.rowTitle}>Mi perfil</Text>
-                        <Text style={styles.rowText}>Consulta tus datos</Text>
-                    </View>
-                    <View style={styles.arrowCell}><Text style={styles.arrowText}>↗</Text></View>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.row} onPress={() => router.push("/settings")}>
-                    <View style={[styles.iconCell, styles.cellMint]}><Text style={styles.quickIconText}>⚙</Text></View>
-                    <View style={styles.copy}>
-                        <Text style={styles.index}>03</Text>
-                        <Text style={styles.rowTitle}>Ajustes</Text>
-                        <Text style={styles.rowText}>Personaliza tu espacio</Text>
-                    </View>
-                    <View style={styles.arrowCell}><Text style={styles.arrowText}>↗</Text></View>
-                </TouchableOpacity>
-
-                <View style={styles.noteCard}>
+                <GlassCard style={styles.noteCard}>
                     <View style={styles.noteDot} />
                     <View style={styles.noteTextWrap}>
                         <Text style={styles.noteTitle}>Todo listo para comenzar</Text>
                         <Text style={styles.noteDescription}>Explora tus opciones desde el menú y mantén tu información al día.</Text>
                     </View>
-                </View>
+                </GlassCard>
             </ScrollView>
 
             <SideMenu
@@ -121,66 +145,39 @@ export default function HomeScreen() {
                 }}
                 onLogout={handleLogout}
             />
-        </View>
+        </GlassBackground>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: P.bg },
-    topBar: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        paddingTop: 46,
-        paddingBottom: 14,
-        paddingHorizontal: 20,
-        backgroundColor: P.lavender,
-        borderBottomWidth: 3,
-        borderBottomColor: P.ink,
-    },
-    squareButton: {
-        width: 44,
-        height: 44,
-        backgroundColor: P.paper,
-        borderWidth: 2,
-        borderColor: P.ink,
-        borderRightWidth: 4,
-        borderBottomWidth: 4,
+    content: { padding: S.lg, paddingBottom: S.xxl, gap: S.md },
+    hero: { gap: S.sm, marginTop: S.sm, marginBottom: S.lg },
+    greeting: { fontSize: 12, fontWeight: "700", letterSpacing: 0.6, color: G.accent },
+    title: { ...T.title, fontSize: 30, lineHeight: 36, marginTop: S.xs },
+    subtitle: { ...T.body, color: G.textSoft },
+
+    sectionTitle: { ...T.label, textTransform: "uppercase", letterSpacing: 1.6, marginLeft: S.xs },
+
+    row: { ...glass.card, flexDirection: "row", alignItems: "center", gap: S.md, padding: S.md },
+    iconCell: {
+        width: 56,
+        height: 56,
+        borderRadius: R.md,
         alignItems: "center",
         justifyContent: "center",
+        borderWidth: 1,
+        borderColor: G.borderSoft,
     },
-    menuIcon: { fontSize: 20, color: P.ink, fontWeight: "900" },
-    profile: { fontSize: 20 },
-    eyebrow: { color: P.ink, fontFamily: MONO, fontSize: 11, fontWeight: "700", letterSpacing: 2 },
+    iconText: { fontSize: 26, color: G.text },
+    copy: { flex: 1, minWidth: 0, gap: 2 },
+    index: { ...T.label, fontSize: 11, color: G.textMute },
+    rowTitle: { ...T.heading, fontSize: 17 },
+    rowText: { ...T.caption },
+    arrowText: { color: G.accentEnd, fontSize: 20, fontWeight: "800" },
 
-    content: { padding: 20, paddingBottom: 40 },
-    hero: { borderLeftWidth: 10, borderLeftColor: P.peachStrong, paddingLeft: 16, marginTop: 8, marginBottom: 30 },
-    greetingTag: { alignSelf: "flex-start", backgroundColor: P.mint, borderWidth: 2, borderColor: P.ink, paddingHorizontal: 10, paddingVertical: 4, marginBottom: 14 },
-    greeting: { fontFamily: MONO, fontSize: 12, fontWeight: "700", color: P.ink },
-    title: { fontSize: 36, lineHeight: 40, fontWeight: "900", color: P.ink, textTransform: "uppercase", letterSpacing: -0.5 },
-    subtitle: { fontSize: 15, color: P.inkSoft, marginTop: 12 },
-
-    sectionHead: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 18 },
-    sectionTitle: { fontFamily: MONO, fontSize: 12, fontWeight: "700", letterSpacing: 2, color: P.ink, textTransform: "uppercase" },
-    sectionRule: { flex: 1, height: 3, backgroundColor: P.ink },
-
-    row: { ...BLOCK, flexDirection: "row", alignItems: "stretch", backgroundColor: P.paper, marginBottom: 16 },
-    iconCell: { width: 76, alignItems: "center", justifyContent: "center", borderRightWidth: 2, borderRightColor: P.ink },
-    cellPeach: { backgroundColor: P.peachStrong },
-    cellRose: { backgroundColor: P.roseStrong },
-    cellMint: { backgroundColor: P.mintStrong },
-    studentsIconText: { fontSize: 30 },
-    quickIconText: { fontSize: 30, color: P.ink },
-    copy: { flex: 1, paddingVertical: 14, paddingHorizontal: 14 },
-    index: { fontFamily: MONO, fontSize: 11, color: P.inkMute, marginBottom: 4 },
-    rowTitle: { fontSize: 18, fontWeight: "900", color: P.ink, textTransform: "uppercase", letterSpacing: 0.5 },
-    rowText: { fontSize: 12, lineHeight: 17, color: P.inkSoft, marginTop: 4 },
-    arrowCell: { width: 44, alignItems: "center", justifyContent: "center", backgroundColor: P.ink },
-    arrowText: { color: P.bg, fontSize: 18, fontWeight: "900" },
-
-    noteCard: { flexDirection: "row", alignItems: "flex-start", gap: 12, padding: 16, marginTop: 6, backgroundColor: P.lavender, borderWidth: 2, borderColor: P.ink, borderStyle: "dashed" },
-    noteDot: { width: 12, height: 12, backgroundColor: P.ink, marginTop: 4 },
-    noteTextWrap: { flex: 1 },
-    noteTitle: { color: P.ink, fontSize: 13, fontWeight: "900", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 },
-    noteDescription: { color: P.inkSoft, fontSize: 12, lineHeight: 18 },
+    noteCard: { flexDirection: "row", alignItems: "flex-start", gap: S.md, padding: S.lg, marginTop: S.sm },
+    noteDot: { width: 10, height: 10, borderRadius: 3, backgroundColor: G.accentEnd, marginTop: 5 },
+    noteTextWrap: { flex: 1, minWidth: 0, gap: S.xs },
+    noteTitle: { ...T.heading, fontSize: 15, lineHeight: 20 },
+    noteDescription: { ...T.caption },
 });

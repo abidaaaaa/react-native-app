@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { BLOCK, P } from '../constants/palette';
+import { View, Text, StyleSheet, Alert } from 'react-native';
+import { G, R, S, T, glass } from '../constants/design';
 import { ApiError, ErrorType } from '../types/errors';
+import { GlassButton } from './glass';
 
 interface ErrorMessageProps {
   error: ApiError | null;
@@ -14,8 +15,12 @@ export const ErrorMessage: React.FC<ErrorMessageProps> = ({
   onRetry,
   onDismiss,
 }) => {
-  // ERROR #5 y #6: ref siempre actualizada para evitar stale closure.
-  // Los hooks van ANTES del return condicional.
+  /**
+   * ERROR #5 y #6: Stale closure y dependencias de hooks
+   * onRetryRef siempre guarda la última versión de onRetry, y handleRetry
+   * (useCallback sin dependencias) la lee desde la ref.
+   * Los hooks van ANTES del return condicional.
+   */
   const onRetryRef = useRef(onRetry);
 
   useEffect(() => {
@@ -33,7 +38,7 @@ export const ErrorMessage: React.FC<ErrorMessageProps> = ({
 
   if (!error) return null;
 
-  // ERROR #4: mensaje calculado fuera del JSX
+  // ERROR #4: mensaje validado fuera del JSX
   const message = error.message ? error.message : 'Error desconocido';
 
   const getIcon = () => {
@@ -63,13 +68,12 @@ export const ErrorMessage: React.FC<ErrorMessageProps> = ({
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        <View style={styles.iconCell}>
+        <View style={styles.iconChip}>
           {/* ERROR #7 */}
           <Text
             style={styles.icon}
             accessibilityLabel={getIconLabel()}
-            accessibilityRole="image"
-          >
+            accessibilityRole="image">
             {getIcon()}
           </Text>
         </View>
@@ -81,14 +85,15 @@ export const ErrorMessage: React.FC<ErrorMessageProps> = ({
         <View style={styles.actions}>
           {canRetry && onRetry && (
             // ERROR #5 y #6: usa handleRetry en lugar de onRetry directo
-            <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
-              <Text style={styles.retryText}>Reintentar</Text>
-            </TouchableOpacity>
+            <GlassButton title="Reintentar" onPress={handleRetry} style={styles.action} />
           )}
           {onDismiss && (
-            <TouchableOpacity style={styles.dismissButton} onPress={onDismiss}>
-              <Text style={styles.dismissText}>Cerrar</Text>
-            </TouchableOpacity>
+            <GlassButton
+              title="Cerrar"
+              variant="secondary"
+              onPress={onDismiss}
+              style={styles.action}
+            />
           )}
         </View>
       )}
@@ -98,63 +103,34 @@ export const ErrorMessage: React.FC<ErrorMessageProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    ...BLOCK,
-    backgroundColor: P.paper,
-    margin: 16,
-    overflow: 'hidden',
+    ...glass.card,
+    margin: S.lg,
+    padding: S.lg,
+    gap: S.lg,
   },
   content: {
     flexDirection: 'row',
-    alignItems: 'stretch',
+    alignItems: 'center',
+    gap: S.md,
   },
-  iconCell: {
-    width: 64,
+  iconChip: {
+    width: 48,
+    height: 48,
+    borderRadius: R.md,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: P.roseStrong,
-    borderRightWidth: 2,
-    borderRightColor: P.ink,
+    backgroundColor: G.dangerSoft,
   },
-  icon: { fontSize: 26 },
+  icon: { fontSize: 24 },
   message: {
+    ...T.body,
     flex: 1,
-    padding: 16,
-    fontSize: 14,
-    fontWeight: '700',
-    color: P.ink,
-    lineHeight: 20,
+    flexShrink: 1,
+    fontWeight: '600',
   },
   actions: {
     flexDirection: 'row',
-    borderTopWidth: 2,
-    borderTopColor: P.ink,
+    gap: S.md,
   },
-  retryButton: {
-    flex: 1,
-    paddingVertical: 14,
-    alignItems: 'center',
-    backgroundColor: P.mintStrong,
-  },
-  retryText: {
-    color: P.ink,
-    fontSize: 12,
-    fontWeight: '900',
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-  },
-  dismissButton: {
-    flex: 1,
-    paddingVertical: 14,
-    alignItems: 'center',
-    backgroundColor: P.lavender,
-    borderLeftWidth: 2,
-    borderLeftColor: P.ink,
-  },
-  dismissText: {
-    color: P.ink,
-    fontSize: 12,
-    fontWeight: '900',
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-  },
+  action: { flex: 1 },
 });

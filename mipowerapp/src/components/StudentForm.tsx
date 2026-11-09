@@ -3,13 +3,13 @@ import {
   View,
   TextInput,
   StyleSheet,
-  TouchableOpacity,
   Text,
   Alert,
   Keyboard,
 } from 'react-native';
-import { BLOCK, P } from '../constants/palette';
+import { G, S, T, glass } from '../constants/design';
 import { Student, CreateStudentData } from '../types/student';
+import { GlassButton } from './glass';
 
 interface StudentFormProps {
   student?: Student;
@@ -70,63 +70,61 @@ export default function StudentForm({ student, onSubmit, onCancel }: StudentForm
 
   return (
     <View style={styles.container}>
-      <View style={styles.topStripe} />
-      <View style={styles.body}>
-        <Text style={styles.title}>✿ {student ? 'Editar' : 'Nuevo'} estudiante</Text>
+      <Text style={styles.title}>{student ? 'Editar' : 'Nuevo'} estudiante</Text>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Nombre"
-          placeholderTextColor={P.inkMute}
-          value={nombre}
-          onChangeText={setNombre}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Apellido"
-          placeholderTextColor={P.inkMute}
-          value={apellido}
-          onChangeText={setApellido}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Matrícula"
-          placeholderTextColor={P.inkMute}
-          value={matricula}
-          onChangeText={setMatricula}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          placeholderTextColor={P.inkMute}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder={student ? 'Nueva contraseña (mín. 6)' : 'Contraseña (mín. 6)'}
-          placeholderTextColor={P.inkMute}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          autoCapitalize="none"
-        />
+      <TextInput
+        style={styles.input}
+        placeholder="Nombre"
+        placeholderTextColor={G.textMute}
+        value={nombre}
+        onChangeText={setNombre}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Apellido"
+        placeholderTextColor={G.textMute}
+        value={apellido}
+        onChangeText={setApellido}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Matrícula"
+        placeholderTextColor={G.textMute}
+        value={matricula}
+        onChangeText={setMatricula}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Email"
+        placeholderTextColor={G.textMute}
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
+      />
+      <TextInput
+        style={styles.input}
+        placeholder={student ? 'Nueva contraseña (mín. 6)' : 'Contraseña (mín. 6)'}
+        placeholderTextColor={G.textMute}
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+        autoCapitalize="none"
+      />
 
-        <View style={styles.buttons}>
-          <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
-            <Text style={styles.cancelText}>Cancelar</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.submitButton, submitting && styles.submitButtonDisabled]}
-            onPress={handleSubmit}
-            disabled={submitting}>
-            <Text style={styles.submitText}>
-              {student ? 'Actualizar' : 'Crear'}
-            </Text>
-          </TouchableOpacity>
-        </View>
+      <View style={styles.buttons}>
+        <GlassButton
+          title="Cancelar"
+          variant="secondary"
+          onPress={onCancel}
+          style={styles.button}
+        />
+        <GlassButton
+          title={student ? 'Actualizar' : 'Crear'}
+          onPress={handleSubmit}
+          loading={submitting}
+          style={styles.button}
+        />
       </View>
     </View>
   );
@@ -134,79 +132,17 @@ export default function StudentForm({ student, onSubmit, onCancel }: StudentForm
 
 const styles = StyleSheet.create({
   container: {
-    ...BLOCK,
-    backgroundColor: P.paper,
-    margin: 16,
-    overflow: 'hidden',
+    ...glass.card,
+    margin: S.lg,
+    padding: S.xl,
+    gap: S.md,
   },
-  topStripe: {
-    height: 14,
-    experimental_backgroundImage: `linear-gradient(90deg, ${P.lavenderStrong}, ${P.roseStrong}, ${P.yellowStrong}, ${P.mintStrong})`,
-    borderBottomWidth: 2,
-    borderBottomColor: P.ink,
-  },
-  body: {
-    padding: 20,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '900',
-    color: P.ink,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 18,
-    textAlign: 'center',
-  },
-  input: {
-    borderWidth: 2,
-    borderColor: P.lavenderStrong,
-    borderRadius: 18,
-    backgroundColor: P.lavenderSoft,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    marginBottom: 14,
-    fontSize: 15,
-    color: P.ink,
-  },
+  title: { ...T.title, fontSize: 22, lineHeight: 28, marginBottom: S.xs },
+  input: { ...glass.input },
   buttons: {
     flexDirection: 'row',
-    marginTop: 8,
-    gap: 10,
+    gap: S.md,
+    marginTop: S.sm,
   },
-  cancelButton: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: P.paper,
-    borderWidth: 2,
-    borderColor: P.ink,
-    borderRadius: 18,
-    alignItems: 'center',
-  },
-  cancelText: {
-    color: P.ink,
-    fontSize: 13,
-    fontWeight: '900',
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-  },
-  submitButton: {
-    flex: 1,
-    padding: 16,
-    borderRadius: 18,
-    borderWidth: 2,
-    borderColor: P.ink,
-    alignItems: 'center',
-    experimental_backgroundImage: `linear-gradient(135deg, ${P.mintStrong}, ${P.mint})`,
-  },
-  submitButtonDisabled: {
-    backgroundColor: P.lavender,
-    opacity: 0.6,
-  },
-  submitText: {
-    color: P.ink,
-    fontSize: 13,
-    fontWeight: '900',
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-  },
+  button: { flex: 1 },
 });

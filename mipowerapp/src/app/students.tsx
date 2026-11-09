@@ -7,7 +7,7 @@ import { View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import StudentList from '../components/StudentList';
 import { ErrorMessage, Loading } from '../components';
-import { P } from '../constants/palette';
+import { GlassBackground } from '../components/glass';
 import { useStudents } from '../hooks/useStudents';
 import { Student } from '../types/student';
 
@@ -43,27 +43,28 @@ export default function StudentsScreen() {
 
   if (error && students.length === 0) {
     return (
-      <View style={styles.container}>
-        <ErrorMessage error={error} onRetry={refresh} />
-      </View>
+      <GlassBackground>
+        <View style={styles.container}>
+          <ErrorMessage error={error} onRetry={refresh} />
+        </View>
+      </GlassBackground>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <GlassBackground>
       <StudentList
         students={students}
         onStudentPress={handleStudentPress}
         onRefresh={onRefresh}
         refreshing={refreshing}
       />
-    </View>
+    </GlassBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: P.bg,
   },
 });

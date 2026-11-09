@@ -1,14 +1,17 @@
 import {
+    ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
     View
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 
-import { BLOCK, MONO, P } from "../constants/palette";
+import { G, R, S, T } from "../constants/design";
 import { SideMenuProps } from "../interfaces/menu.interface";
 import { RootState } from "../store/store";
+import { GlassButton } from "./glass";
 import MenuItem from "./MenuItem";
 
 export default function SideMenu({
@@ -21,6 +24,7 @@ export default function SideMenu({
 
     // Obtener usuario del estado global de Redux
     const user = useSelector((state: RootState) => state.auth.user);
+    const insets = useSafeAreaInsets();
 
     if (!visible) {
         return null;
@@ -40,13 +44,16 @@ export default function SideMenu({
             <TouchableOpacity
                 style={styles.background}
                 onPress={onClose}
+                activeOpacity={1}
+                accessibilityRole="button"
+                accessibilityLabel="Cerrar menú"
             />
 
             {/* MENÚ LATERAL DERECHO */}
             <View style={styles.menu}>
 
                 {/* INFORMACIÓN DEL USUARIO */}
-                <View style={styles.userContainer}>
+                <View style={[styles.userContainer, { paddingTop: insets.top + S.xl }]}>
 
                     <View style={styles.avatar}>
                         <Text style={styles.avatarText}>
@@ -64,7 +71,11 @@ export default function SideMenu({
 
                 </View>
 
-                <View style={styles.list}>
+                <ScrollView
+                    style={styles.listScroll}
+                    contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + S.xl }]}
+                    showsVerticalScrollIndicator={false}
+                >
 
                     {/* OPCIÓN INICIO */}
                     <Text style={styles.menuSection}>MENÚ</Text>
@@ -92,22 +103,13 @@ export default function SideMenu({
                     <View style={styles.spacer} />
 
                     {/* CERRAR SESIÓN */}
-                    <TouchableOpacity
-                        style={styles.logout}
+                    <GlassButton
+                        title="Cerrar sesión"
+                        variant="danger"
                         onPress={onLogout}
-                    >
+                    />
 
-                        <Text style={styles.logoutIcon}>
-                            🚪
-                        </Text>
-
-                        <Text style={styles.logoutText}>
-                            Cerrar sesión
-                        </Text>
-
-                    </TouchableOpacity>
-
-                </View>
+                </ScrollView>
 
             </View>
 
@@ -127,84 +129,62 @@ const styles = StyleSheet.create({
     },
     background: {
         flex: 1,
-        backgroundColor: "rgba(63, 53, 86, 0.45)",
+        backgroundColor: "rgba(3, 5, 14, 0.65)",
     },
     menu: {
         width: "80%",
         maxWidth: 360,
         height: "100%",
-        backgroundColor: P.bg,
-        borderLeftWidth: 4,
-        borderLeftColor: P.ink,
+        backgroundColor: G.bgRaised,
+        borderLeftWidth: 1,
+        borderLeftColor: G.border,
     },
     userContainer: {
-        paddingTop: 58,
-        paddingBottom: 22,
-        paddingHorizontal: 20,
-        backgroundColor: P.peach,
-        borderBottomWidth: 4,
-        borderBottomColor: P.ink,
+        paddingBottom: S.xl,
+        paddingHorizontal: S.xl,
+        backgroundColor: G.glass,
+        borderBottomWidth: 1,
+        borderBottomColor: G.border,
+        gap: S.xs,
     },
     avatar: {
-        ...BLOCK,
-        width: 70,
-        height: 70,
-        backgroundColor: P.lavenderStrong,
+        width: 64,
+        height: 64,
+        borderRadius: R.lg,
+        backgroundColor: G.accentSoft,
+        borderWidth: 1,
+        borderColor: G.border,
         justifyContent: "center",
         alignItems: "center",
-        marginBottom: 16,
+        marginBottom: S.md,
     },
     avatarText: {
-        color: P.ink,
-        fontSize: 32,
-        fontWeight: "900",
+        color: G.text,
+        fontSize: 28,
+        fontWeight: "800",
     },
     name: {
-        fontSize: 20,
-        fontWeight: "900",
-        textTransform: "uppercase",
-        color: P.ink,
-        marginBottom: 4,
+        ...T.heading,
     },
     email: {
-        fontFamily: MONO,
-        fontSize: 12,
-        color: P.inkSoft,
+        ...T.caption,
+    },
+    listScroll: {
+        flex: 1,
     },
     list: {
-        flex: 1,
-        paddingHorizontal: 20,
-        paddingTop: 22,
-        paddingBottom: 24,
+        flexGrow: 1,
+        paddingHorizontal: S.xl,
+        paddingTop: S.xl,
     },
     menuSection: {
-        color: P.inkMute,
-        fontFamily: MONO,
-        fontSize: 11,
-        fontWeight: "700",
-        letterSpacing: 3,
-        marginBottom: 4,
+        ...T.label,
+        color: G.textMute,
+        letterSpacing: 2,
+        marginBottom: S.sm,
     },
     spacer: {
-        flex: 1,
-    },
-    logout: {
-        ...BLOCK,
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 10,
-        paddingVertical: 15,
-        backgroundColor: P.rose,
-    },
-    logoutIcon: {
-        fontSize: 18,
-    },
-    logoutText: {
-        fontSize: 13,
-        color: P.roseInk,
-        fontWeight: "900",
-        letterSpacing: 1.5,
-        textTransform: "uppercase",
+        flexGrow: 1,
+        minHeight: S.xl,
     },
 });

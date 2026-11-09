@@ -9,14 +9,15 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import { BLOCK, MONO, P } from '../constants/palette';
+import { G, S, T } from '../constants/design';
+import { GlassBackground, GlassCard } from './glass';
 
 interface LoadingProps {
   message?: string;
   fullScreen?: boolean;
 }
 
-const DOT_COLORS = [P.lavenderStrong, P.roseStrong, P.yellowStrong, P.mintStrong];
+const DOT_COLORS = [G.accent, G.accentEnd, G.violet, G.accent];
 
 function Dot({ delay, color }: { delay: number; color: string }) {
   const ty = useSharedValue(0);
@@ -25,7 +26,7 @@ function Dot({ delay, color }: { delay: number; color: string }) {
       delay,
       withRepeat(
         withSequence(
-          withTiming(-14, { duration: 420, easing: Easing.out(Easing.ease) }),
+          withTiming(-12, { duration: 420, easing: Easing.out(Easing.ease) }),
           withTiming(0, { duration: 420, easing: Easing.in(Easing.ease) })
         ),
         -1,
@@ -36,69 +37,57 @@ function Dot({ delay, color }: { delay: number; color: string }) {
   const a = useAnimatedStyle(() => ({
     transform: [{ translateY: ty.value }],
   }));
-  return (
-    <Animated.View
-      style={[
-        styles.dot,
-        { backgroundColor: color, shadowColor: color },
-        a,
-      ]}
-    />
-  );
+  return <Animated.View style={[styles.dot, { backgroundColor: color }, a]} />;
 }
 
 export const Loading: React.FC<LoadingProps> = ({
   message = 'Cargando...',
   fullScreen = false,
 }) => {
-  return (
-    <View style={[styles.container, fullScreen && styles.fullScreen]}>
-      <View style={styles.box}>
+  const content = (
+    <View style={styles.container}>
+      <GlassCard style={styles.box}>
         <Dot delay={0} color={DOT_COLORS[0]} />
         <Dot delay={120} color={DOT_COLORS[1]} />
         <Dot delay={240} color={DOT_COLORS[2]} />
         <Dot delay={360} color={DOT_COLORS[3]} />
-      </View>
-      {message && <Text style={styles.message}>{message}</Text>}
+      </GlassCard>
+      {message ? <Text style={styles.message}>{message}</Text> : null}
     </View>
   );
+
+  if (fullScreen) {
+    return <GlassBackground style={styles.fullScreen}>{content}</GlassBackground>;
+  }
+  return content;
 };
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    padding: S.xl,
     alignItems: 'center',
     justifyContent: 'center',
   },
   fullScreen: {
-    flex: 1,
-    experimental_backgroundImage: `linear-gradient(180deg, ${P.lavenderSoft}, ${P.roseSoft})`,
+    justifyContent: 'center',
   },
   box: {
-    ...BLOCK,
-    width: 100,
-    height: 100,
-    backgroundColor: P.paper,
+    width: 104,
+    height: 84,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: S.sm,
   },
   dot: {
     width: 12,
     height: 12,
     borderRadius: 6,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 8,
   },
   message: {
-    marginTop: 22,
-    fontFamily: MONO,
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    color: P.ink,
+    ...T.label,
+    marginTop: S.lg,
+    fontSize: 13,
+    color: G.textSoft,
   },
 });

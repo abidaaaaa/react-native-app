@@ -1,128 +1,112 @@
 import {
+    ScrollView,
     StyleSheet,
     Text,
-    TouchableOpacity,
     View
 } from "react-native";
 
 import { useRouter } from "expo-router";
+import { useDispatch } from "react-redux";
 
-import { BLOCK, MONO, P } from "../constants/palette";
+import { GlassBackground, GlassButton, GlassCard, GlassHeader } from "../components/glass";
+import { G, R, S, T } from "../constants/design";
+import { logout } from "../store/store";
+import { removeStorage } from "../utils/authStorage";
 
-export default function SettingsScreen() {
-
-    const router = useRouter();
-
-    const handleLogout = () => {
-        router.replace("/");
-    };
-
+/* Opción de la lista (solo visual) */
+function Option({
+    icon,
+    text,
+    tint,
+    last = false,
+}: {
+    icon: string;
+    text: string;
+    tint: string;
+    last?: boolean;
+}) {
     return (
-        <View style={styles.container}>
-
-            <View style={styles.header}>
-
-                <TouchableOpacity
-                    style={styles.backButton}
-                    onPress={() => router.back()}
-                >
-                    <Text style={styles.back}>
-                        ←
-                    </Text>
-                </TouchableOpacity>
-
-                <View style={styles.headerCopy}>
-                    <Text style={styles.headerEyebrow}>TU CUENTA</Text>
-                    <Text style={styles.headerTitle}>Configuración</Text>
-                </View>
-                <View style={styles.headerBalance} />
-
+        <View style={[styles.option, !last && styles.optionDivider]}>
+            <View style={[styles.optionIconBox, { backgroundColor: tint }]}>
+                <Text style={styles.optionIcon}>{icon}</Text>
             </View>
-
-            <View style={styles.sectionHead}>
-                <Text style={styles.sectionLabel}>Preferencias</Text>
-                <View style={styles.sectionRule} />
-            </View>
-
-            <View style={styles.options}>
-                <View style={[styles.option, styles.rowLavender]}><Text style={styles.optionIcon}>ⓘ</Text><Text style={styles.optionText}>Información de la app</Text><Text style={styles.optionArrow}>→</Text></View>
-                <View style={[styles.option, styles.rowPeach]}><Text style={styles.optionIcon}>⚙</Text><Text style={styles.optionText}>Preferencias</Text><Text style={styles.optionArrow}>→</Text></View>
-                <View style={[styles.option, styles.rowMint]}><Text style={styles.optionIcon}>♧</Text><Text style={styles.optionText}>Notificaciones</Text><Text style={styles.optionArrow}>→</Text></View>
-                <View style={[styles.option, styles.rowRose]}><Text style={styles.optionIcon}>▣</Text><Text style={styles.optionText}>Privacidad</Text><Text style={styles.optionArrow}>→</Text></View>
-                <View style={[styles.option, styles.lastOption, styles.rowLavender]}><Text style={styles.optionIcon}>?</Text><Text style={styles.optionText}>Ayuda y soporte</Text><Text style={styles.optionArrow}>→</Text></View>
-            </View>
-
-            <TouchableOpacity
-                style={styles.logout}
-                onPress={handleLogout}
-            >
-                <Text style={styles.logoutIcon}>↪</Text>
-                <Text style={styles.logoutText}>Cerrar sesión</Text>
-            </TouchableOpacity>
-
+            <Text style={styles.optionText} numberOfLines={1}>{text}</Text>
+            <Text style={styles.optionArrow}>→</Text>
         </View>
     );
 }
 
+export default function SettingsScreen() {
+
+    const router = useRouter();
+    const dispatch = useDispatch();
+
+    // Igual que en home y perfil: borra la sesión guardada y limpia Redux
+    const handleLogout = async () => {
+        await removeStorage("user_token");
+        await removeStorage("user_info");
+        await removeStorage("refresh_token");
+        dispatch(logout());
+        router.replace("/");
+    };
+
+    return (
+        <GlassBackground>
+
+            <GlassHeader
+                eyebrow="TU CUENTA"
+                title="Configuración"
+                left={{ icon: "←", label: "Regresar", onPress: () => router.back() }}
+            />
+
+            <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+
+                <Text style={styles.sectionLabel}>Preferencias</Text>
+
+                <GlassCard>
+                    <Option icon="ⓘ" text="Información de la app" tint={G.accentSoft} />
+                    <Option icon="⚙" text="Preferencias" tint={G.violetSoft} />
+                    <Option icon="♧" text="Notificaciones" tint={G.cyanSoft} />
+                    <Option icon="▣" text="Privacidad" tint={G.accentSoft} />
+                    <Option icon="?" text="Ayuda y soporte" tint={G.violetSoft} last />
+                </GlassCard>
+
+                <GlassButton
+                    title="Cerrar sesión"
+                    variant="danger"
+                    onPress={handleLogout}
+                    style={styles.logout}
+                />
+
+            </ScrollView>
+
+        </GlassBackground>
+    );
+}
+
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: P.bg },
-    header: {
-        flexDirection: "row",
-        alignItems: "center",
-        paddingHorizontal: 20,
-        paddingTop: 46,
-        paddingBottom: 18,
-        gap: 16,
-        backgroundColor: P.mint,
-        borderBottomWidth: 3,
-        borderBottomColor: P.ink,
-    },
-    backButton: {
-        width: 44, height: 44, backgroundColor: P.paper,
-        borderWidth: 2, borderColor: P.ink, borderRightWidth: 4, borderBottomWidth: 4,
-        alignItems: "center", justifyContent: "center",
-    },
-    back: { fontSize: 20, color: P.ink, fontWeight: "900" },
-    headerCopy: { flex: 1 },
-    headerEyebrow: { color: P.mintInk, fontFamily: MONO, fontSize: 11, fontWeight: "700", letterSpacing: 3, marginBottom: 2 },
-    headerBalance: { width: 4 },
-    headerTitle: { fontSize: 26, fontWeight: "900", color: P.ink, textTransform: "uppercase", letterSpacing: -0.5 },
-    sectionHead: { flexDirection: "row", alignItems: "center", gap: 12, marginTop: 28, marginBottom: 16, marginHorizontal: 20 },
-    sectionLabel: { color: P.ink, fontFamily: MONO, fontSize: 12, fontWeight: "700", letterSpacing: 2, textTransform: "uppercase" },
-    sectionRule: { flex: 1, height: 3, backgroundColor: P.ink },
-    options: {
-        ...BLOCK,
-        marginHorizontal: 20,
-        backgroundColor: P.paper,
-    },
+    content: { padding: S.lg, paddingBottom: S.xxl, gap: S.md },
+    sectionLabel: { ...T.label, textTransform: "uppercase", letterSpacing: 1.6, marginLeft: S.xs },
     option: {
         minHeight: 62,
         flexDirection: "row",
         alignItems: "center",
-        gap: 14,
-        paddingHorizontal: 16,
-        borderBottomWidth: 2,
-        borderBottomColor: P.ink,
+        gap: S.md,
+        paddingHorizontal: S.md,
+        paddingVertical: S.sm,
     },
-    lastOption: { borderBottomWidth: 0 },
-    rowLavender: { backgroundColor: P.lavender },
-    rowPeach: { backgroundColor: P.peach },
-    rowMint: { backgroundColor: P.mint },
-    rowRose: { backgroundColor: P.rose },
-    optionIcon: { width: 30, textAlign: "center", color: P.ink, fontSize: 20, fontWeight: "900" },
-    optionText: { flex: 1, color: P.ink, fontSize: 13, fontWeight: "900", letterSpacing: 1, textTransform: "uppercase" },
-    optionArrow: { color: P.ink, fontFamily: MONO, fontSize: 18, fontWeight: "700" },
-    logout: {
-        ...BLOCK,
-        flexDirection: "row",
+    optionDivider: { borderBottomWidth: 1, borderBottomColor: G.divider },
+    optionIconBox: {
+        width: 40,
+        height: 40,
+        borderRadius: R.sm,
         alignItems: "center",
         justifyContent: "center",
-        gap: 10,
-        backgroundColor: P.roseStrong,
-        padding: 16,
-        marginHorizontal: 20,
-        marginTop: 26,
+        borderWidth: 1,
+        borderColor: G.borderSoft,
     },
-    logoutIcon: { color: P.ink, fontSize: 18, fontWeight: "900" },
-    logoutText: { color: P.ink, fontSize: 13, fontWeight: "900", letterSpacing: 1.5, textTransform: "uppercase" },
+    optionIcon: { color: G.text, fontSize: 18, fontWeight: "800" },
+    optionText: { ...T.body, flex: 1, minWidth: 0, fontWeight: "700" },
+    optionArrow: { color: G.accentEnd, fontSize: 18, fontWeight: "700" },
+    logout: { marginTop: S.lg },
 });

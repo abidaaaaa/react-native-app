@@ -1,6 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { BLOCK, P } from '../constants/palette';
+import { View, Text, StyleSheet } from 'react-native';
+import { S, T } from '../constants/design';
+import { GlassBackground, GlassButton, GlassCard } from './glass';
 
 interface Props {
   children: ReactNode;
@@ -14,39 +15,35 @@ interface State {
 
 export default class ErrorBoundary extends Component<Props, State> {
   public state: State = { hasError: false, error: null };
-/**
- * ERROR #11: Memory leak en el reset del ErrorBoundary
- * Problema: handleReset llamaba a setState sin saber si el componente
- * seguía montado, y si se desmontaba al mismo tiempo se actualizaba
- * estado de un componente que ya no existe.
- * Solución: la bandera `mounted` (true en componentDidMount, false en
- * componentWillUnmount) y solo se resetea si sigue montado.
- */
 
-  // ERROR #11: bandera para saber si el componente sigue montado
-  private mounted = false;
+  /**
+   * ERROR #11: Memory leak en el reset del ErrorBoundary
+   * Problema: handleReset llamaba a setState sin saber si el componente
+   * seguía montado, y si se desmontaba al mismo tiempo se actualizaba
+   * estado de un componente que ya no existe.
+   * Solución: la bandera `isMounted` (true en componentDidMount, false en
+   * componentWillUnmount) y solo se resetea si sigue montado.
+   */
+  private isMounted: boolean = false;
 
   public static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error };
   }
 
-  // ERROR #11
   public componentDidMount() {
-    this.mounted = true;
+    this.isMounted = true;
   }
 
-  // ERROR #11
   public componentWillUnmount() {
-    this.mounted = false;
+    this.isMounted = false;
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Error capturado por boundary:', error, errorInfo);
   }
 
-  // ERROR #11: solo resetea si sigue montado
   private handleReset = () => {
-    if (this.mounted) {
+    if (this.isMounted) {
       this.setState({ hasError: false, error: null });
     }
   };
@@ -56,18 +53,18 @@ export default class ErrorBoundary extends Component<Props, State> {
       if (this.props.fallback) return this.props.fallback;
 
       return (
-        <View style={styles.container}>
-          <View style={styles.card}>
+        <GlassBackground style={styles.center}>
+          <GlassCard style={styles.card}>
             <Text style={styles.emoji}>☁️</Text>
             <Text style={styles.title}>Algo salió mal</Text>
             <Text style={styles.message}>
               {this.state.error && this.state.error.message ? this.state.error.message : 'Error desconocido'}
             </Text>
-            <TouchableOpacity style={styles.button} onPress={this.handleReset}>
-              <Text style={styles.buttonText}>Intentar de nuevo</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+            <View style={styles.actions}>
+              <GlassButton title="Intentar de nuevo" onPress={this.handleReset} />
+            </View>
+          </GlassCard>
+        </GlassBackground>
       );
     }
     return this.props.children;
@@ -75,54 +72,17 @@ export default class ErrorBoundary extends Component<Props, State> {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  center: {
     justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: P.bg,
+    padding: S.xl,
   },
   card: {
-    ...BLOCK,
-    width: '100%',
-    maxWidth: 420,
-    padding: 28,
-    backgroundColor: P.paper,
+    padding: S.xl,
     alignItems: 'center',
+    gap: S.md,
   },
-  emoji: { fontSize: 48, marginBottom: 12 },
-  title: {
-    fontSize: 26,
-    fontWeight: '900',
-    textTransform: 'uppercase',
-    marginBottom: 12,
-    color: P.ink,
-    textAlign: 'center',
-  },
-  message: {
-    fontSize: 14,
-    color: P.inkSoft,
-    marginBottom: 22,
-    textAlign: 'center',
-  },
-  button: {
-    backgroundColor: P.lavenderStrong,
-    borderWidth: 2,
-    borderColor: P.ink,
-    borderRadius: 20,
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    alignItems: 'center',
-    shadowColor: P.lavenderStrong,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 10,
-  },
-  buttonText: {
-    color: P.ink,
-    fontSize: 13,
-    fontWeight: '900',
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-  },
+  emoji: { fontSize: 44 },
+  title: { ...T.title, fontSize: 24, textAlign: 'center' },
+  message: { ...T.body, textAlign: 'center', color: T.caption.color },
+  actions: { alignSelf: 'stretch', marginTop: S.sm },
 });

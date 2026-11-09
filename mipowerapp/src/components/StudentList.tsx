@@ -5,7 +5,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { View, FlatList, TextInput, StyleSheet, Text, RefreshControl } from 'react-native';
 import StudentCard from './StudentCard';
-import { MONO, P } from '../constants/palette';
+import { G, R, S, T, glass } from '../constants/design';
 import { Student } from '../types/student';
 
 interface StudentListProps {
@@ -44,15 +44,14 @@ export default function StudentList({
   return (
     <View style={styles.container}>
       <View style={styles.searchBox}>
-        <View style={styles.searchCell}>
-          <Text style={styles.searchIcon}>⌕</Text>
-        </View>
+        <Text style={styles.searchIcon}>⌕</Text>
         <TextInput
           style={styles.searchInput}
-          placeholder="Buscar por nombre, apellido o matrícula..."
-          placeholderTextColor={P.inkMute}
+          placeholder="Buscar por nombre, apellido o matrícula"
+          placeholderTextColor={G.textMute}
           value={searchQuery}
           onChangeText={setSearchQuery}
+          accessibilityLabel="Buscar estudiante"
         />
       </View>
       <FlatList
@@ -67,7 +66,8 @@ export default function StudentList({
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              colors={[P.lavenderStrong]}
+              colors={[G.accent]}
+              tintColor={G.accent}
             />
           ) : undefined
         }
@@ -82,45 +82,35 @@ export default function StudentList({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: P.bg,
   },
   searchBox: {
+    ...glass.card,
     flexDirection: 'row',
-    alignItems: 'stretch',
-    backgroundColor: P.paper,
-    marginHorizontal: 16,
-    marginTop: 4,
-    borderWidth: 2,
-    borderColor: P.ink,
-  },
-  searchCell: {
-    width: 48,
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: P.lavenderStrong,
-    borderRightWidth: 2,
-    borderRightColor: P.ink,
+    marginHorizontal: S.lg,
+    marginTop: S.xs,
+    paddingHorizontal: S.lg,
+    borderRadius: R.lg,
+    gap: S.sm,
   },
   searchIcon: {
-    fontSize: 24,
-    color: P.ink,
-    fontWeight: '900',
+    fontSize: 22,
+    color: G.accent,
   },
   searchInput: {
     flex: 1,
     paddingVertical: 14,
-    paddingHorizontal: 14,
-    color: P.ink,
+    color: G.text,
+    fontSize: 15,
   },
   listContent: {
-    padding: 16,
-    paddingTop: 20,
+    padding: S.lg,
+    paddingTop: S.lg,
+    paddingBottom: S.xxl,
   },
   emptyText: {
+    ...T.caption,
     textAlign: 'center',
-    color: P.inkMute,
-    fontFamily: MONO,
-    fontSize: 14,
-    marginTop: 40,
+    marginTop: S.xxl,
   },
 });

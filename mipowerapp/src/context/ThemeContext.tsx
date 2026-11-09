@@ -67,7 +67,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       const savedTheme = await AsyncStorage.getItem(THEME_STORAGE_KEY);
       if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
         setTheme(savedTheme);
-      } else if (systemColorScheme) {
+      } else if (systemColorScheme === 'dark' || systemColorScheme === 'light') {
         setTheme(systemColorScheme);
       }
     } catch (error) {
